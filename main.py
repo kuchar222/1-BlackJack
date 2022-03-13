@@ -57,8 +57,13 @@ class Player:
         Returns:
             int: cards value
         """
-        for card in self.cards_on_hand:
-            self.cards_value += card.check_value()
+        self.cards_value = sum(card.check_value() for card in self.cards_on_hand)
+        if self.cards_value == 22 and len(self.cards_on_hand) == 2:  # player has 2 aces his point should be 21
+            self.cards_value = 21
+        elif self.cards_value > 21:  # count 1 point for Ace when sum of all cards is more than 21
+            for card in self.cards_on_hand:
+                if card.check_value() == 11:
+                    self.cards_value -= 10
         return self.cards_value
 
     def __str__(self):
