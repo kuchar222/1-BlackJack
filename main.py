@@ -20,6 +20,7 @@ class Table:
             for player in self.players:
                 self.hit_card(player)
             self.hit_card(self.dealer)
+        self.show()
 
     def hit_card(self, player):
         """dealing card for player
@@ -35,11 +36,40 @@ class Table:
         print()
         print('---'*8)
         print(self.dealer, end=' ma ')
-        print('['+str(self.dealer.cards_on_hand[0]) + ', **]')
+        if self.dealer.passed == False:
+            print('['+str(self.dealer.cards_on_hand[0]) + ', **]')
+        else:
+            print(self.dealer.cards_on_hand)
         print()
         for player in self.players:
             print(player, end=' ma ')
             print(player.cards_on_hand, end='    ')
+        print()
+        print('---'*8)
+
+    def ask_for_card(self):
+        """asking player for hit card or pass
+            and checking his points
+
+        Returns:
+            bool: True if is any player who didn't passed
+        """
+        end = False
+        for player in self.players:
+            if player.passed == False:
+                end = True
+                if input(f'{player} czy chcesz dobrać kartę? (t/n): ').lower() == 't':
+                    self.hit_card(player)
+                    self.show()
+                    if player.count_cards() == 21:
+                        print(f'{player} masz 21 punktów, W Y G R Y W A S Z ! ! !')
+                        player.passed = True
+                    elif player.count_cards() > 21:
+                        print(f'{player} masz ponad 21 punktów, to koniec gry dla Ciebie')
+                        player.passed = True
+                else:
+                    player.passed = True
+        return end
 
 
 class Player:
@@ -49,6 +79,7 @@ class Player:
         self.name = name
         self.cards_on_hand = []
         self.cards_value = 0
+        self.passed = False
         self.cash = 0
 
     def count_cards(self):
@@ -57,12 +88,12 @@ class Player:
         Returns:
             int: cards value
         """
-        self.cards_value = sum(card.check_value() for card in self.cards_on_hand)
+        self.cards_value = sum(card.value for card in self.cards_on_hand)
         if self.cards_value == 22 and len(self.cards_on_hand) == 2:  # player has 2 aces his point should be 21
             self.cards_value = 21
         elif self.cards_value > 21:  # count 1 point for Ace when sum of all cards is more than 21
             for card in self.cards_on_hand:
-                if card.check_value() == 11:
+                if card.value == 11:
                     self.cards_value -= 10
         return self.cards_value
 
@@ -122,7 +153,7 @@ class Card:
     def __init__(self, figure, color) -> None:
         self.figure = figure
         self.color = color
-        self.value = 0
+        self.value = self.check_value()
 
     def check_value(self):
         """checking value card in black jack
@@ -167,7 +198,25 @@ if __name__ == "__main__":
     deck = Deck(number_of_decks)
     table = Table(players, dealer, deck)
     table.deal_cards()
+    while True:
+        if table.ask_for_card() == False:
+            break
+    table.dealer.passed = True
     table.show()
-
-    # player.take_card(deck.give_card())
-    # print(f'{player} has a card: {player.cards_on_hand[0]}')
+    while True:
+        if table.dealer.count_cards() < 17:
+            table.hit_card(dealer)
+        else:
+            break
+    table.show()
+    if table.dealer.cards_value > 21:
+        print('Krupier przekroczył 21 punktów, ')
+        for player in table.players:
+            if player.count_cards() < 22:
+                print(f'{player} WYGRYWASZ')
+    else:
+        for player in table.players:
+            if player.count_cards() - table.dealer.cards_value > 0 and player.count_cards() < 21:
+                print(f'{player} wygrywasz z Krupierem')
+            else:
+                print(f'{player} Krupier wygrał z Tobą')
