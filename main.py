@@ -36,7 +36,7 @@ class Table:
         print()
         print('---'*8)
         print(self.dealer, end=' ma ')
-        if self.dealer.passed == False:
+        if self.dealer.passed is False:
             print('['+str(self.dealer.cards_on_hand[0]) + ', **]')
         else:
             print(self.dealer.cards_on_hand)
@@ -56,7 +56,7 @@ class Table:
         """
         end = False
         for player in self.players:
-            if player.passed == False:
+            if player.passed is False:
                 end = True
                 if input(f'{player} czy chcesz dobrać kartę? (t/n): ').lower() == 't':
                     self.hit_card(player)
@@ -89,9 +89,11 @@ class Player:
             int: cards value
         """
         self.cards_value = sum(card.value for card in self.cards_on_hand)
-        if self.cards_value == 22 and len(self.cards_on_hand) == 2:  # player has 2 aces his point should be 21
+        # player has 2 aces his point should be 21
+        if self.cards_value == 22 and len(self.cards_on_hand) == 2:
             self.cards_value = 21
-        elif self.cards_value > 21:  # count 1 point for Ace when sum of all cards is more than 21
+        # count 1 point for Ace when sum of all cards is more than 21
+        elif self.cards_value > 21:
             for card in self.cards_on_hand:
                 if card.value == 11:
                     self.cards_value -= 10
@@ -142,9 +144,6 @@ class Deck:
             object class Card: card taken from deck
         """
         return self.cards.pop(0)
-
-    # def __repr__(self):
-    #     return self.cards
 
 
 class Card:
@@ -199,7 +198,7 @@ if __name__ == "__main__":
     table = Table(players, dealer, deck)
     table.deal_cards()
     while True:
-        if table.ask_for_card() == False:
+        if table.ask_for_card() is False:
             break
     table.dealer.passed = True
     table.show()
